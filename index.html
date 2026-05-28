@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Varnika Pathology Collection Centre</title>
+    <style>
+        /* General Page Styling */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f7f6; 
+            color: #333; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+        }
+        header { 
+            background-color: #0056b3; 
+            color: white; 
+            padding: 1.5rem; 
+            text-align: center; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        main { 
+            flex: 1; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 2rem; 
+        }
+        
+        /* Form Card Styling */
+        .card { 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            width: 100%; 
+            max-width: 400px; 
+        }
+        .card h2 { margin-top: 0; text-align: center; color: #0056b3; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; font-size: 0.9rem; }
+        input[type="text"], input[type="tel"] { 
+            width: 100%; 
+            padding: 0.75rem; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 1rem;
+        }
+        button { 
+            width: 100%; 
+            padding: 0.8rem; 
+            background-color: #0056b3; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            font-size: 1rem; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        button:hover { background-color: #004494; }
+        
+        /* Footer & Admin Link Styling */
+        footer { 
+            text-align: center; 
+            padding: 1.5rem; 
+            background-color: #e9ecef; 
+            margin-top: auto; 
+        }
+        .admin-link { 
+            color: #6c757d; 
+            text-decoration: none; 
+            font-size: 0.85rem; 
+            cursor: pointer; 
+        }
+        .admin-link:hover { text-decoration: underline; color: #333; }
+
+        /* Admin Section Styling */
+        #adminArea { 
+            display: none; 
+            width: 100%; 
+            max-width: 800px; 
+            margin: 2rem auto; 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            box-sizing: border-box;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.75rem; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #0056b3; color: white; }
+        .close-admin { 
+            background-color: #dc3545; 
+            margin-bottom: 1rem; 
+            width: auto; 
+            padding: 0.5rem 1rem;
+        }
+        .close-admin:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+
+    <div id="publicArea">
+        <header>
+            <h1>Varnika Pathology</h1>
+        </header>
+        <main>
+            <div class="card">
+                <h2>Patient Registration</h2>
+                <form id="patientForm">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" required placeholder="e.g. Rahul Sharma">
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location / Address</label>
+                        <input type="text" id="location" required placeholder="e.g. Gomti Nagar, Lucknow">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" required placeholder="10-digit number" pattern="[0-9]{10}">
+                    </div>
+                    <button type="submit">Submit Request</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <div id="adminArea">
+        <button class="close-admin" onclick="closeAdmin()">Close Admin Panel</button>
+        <h2>Admin Dashboard - Collected Records</h2>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Patient Name</th>
+                    <th>Location</th>
+                    <th>Phone Number</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <footer>
+        <span class="admin-link" onclick="openAdmin()">Admin Section</span>
+    </footer>
+
+    <script>
+        // 1. Handle Form Submission & Saving Data
+        document.getElementById('patientForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevents the page from refreshing on submit
+
+            // Grab the values from the form
+            const name = document.getElementById('name').value;
+            const location = document.getElementById('location').value;
+            const phone = document.getElementById('phone').value;
+            const timestamp = new Date().toLocaleString();
+
+            // Structure the data into an object
+            const patientRecord = { timestamp, name, location, phone };
+
+            // Fetch existing data from LocalStorage (or an empty array if none exists)
+            let records = JSON.parse(localStorage.getItem('varnika_patients')) || [];
+
+            // Add the new record and save it back
+            records.push(patientRecord);
+            localStorage.setItem('varnika_patients', JSON.stringify(records));
+
+            // Notify user and clear the form
+            alert('Details submitted successfully!');
+            this.reset(); 
+        });
+
+        // 2. Handle Opening the Admin Area via Password Prompt
+        function openAdmin() {
+            const password = prompt("Please enter the Admin Password:");
+
+            // Check if password matches
+            if (password === "varnika12345") {
+                // Hide public form, show admin area
+                document.getElementById('publicArea').style.display = 'none';
+                document.getElementById('adminArea').style.display = 'block';
+                loadAdminData(); // Populate the table
+            } else if (password !== null) {
+                // If they typed the wrong password (and didn't click cancel)
+                alert("Incorrect password. Access denied.");
+            }
+        }
+
+        // 3. Handle Closing the Admin Area
+        function closeAdmin() {
+            document.getElementById('adminArea').style.display = 'none';
+            document.getElementById('publicArea').style.display = 'block';
+        }
+
+        // 4. Load Data into the Admin Table
+        function loadAdminData() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = ''; // Clear out any old rows
+
+            let records = JSON.parse(localStorage.getItem('varnika_patients')) || [];
+
+            if (records.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No patient records found.</td></tr>';
+                return;
+            }
+
+            // Loop through each saved record and create an HTML row
+            records.forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${record.timestamp}</td>
+                    <td>${record.name}</td>
+                    <td>${record.location}</td>
+                    <td>${record.phone}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
